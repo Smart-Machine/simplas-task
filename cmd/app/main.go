@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
+	"time"
 
-	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/Smart-Machine/simplas-project/internal/workers"
+	"github.com/Smart-Machine/simplas-project/pkg/entry"
 )
 
 const (
@@ -12,24 +15,40 @@ const (
 )
 
 func main() {
-	// stream := entry.NewJSONStream()
-	// for i := 0; i < numGoroutines; i++ {
-	// 	go func() {
-	// 		for data := range stream.Watch() {
-	// 			if data.Error != nil {
-	// 				log.Println(data.Error)
-	// 			}
-	// 			log.Printf("%v\n", data.Advertisement)
-	// 			time.Sleep(time.Second * 5)
-	// 		}
-	// 	}()
+	// config := elasticsearch.Config{
+	// 	Addresses: []string{
+	// 		"http://64.23.174.193:9200",
+	// 	},
+	// 	Username: "elastic",
+	// }
+	// elasticsearchDefaultClient, err := elasticsearch.NewClient(config)
+	// if err != nil {
+	// 	log.Fatalf("Error creating the client: %s", err)
 	// }
 
-	// stream.Start(dataFilepath)
+	// log.Println(elasticsearch.Version)
+	// log.Println(elasticsearchDefaultClient.Info())
 
-	elasticsearchDefaultClient, _ := elasticsearch.NewDefaultClient()
-	log.Println(elasticsearch.Version)
-	log.Println(elasticsearchDefaultClient.Info())
+	// _, err = elasticsearchDefaultClient.Indices.Create("kitty")
+	// if err != nil {
+	// 	log.Fatalf("Error creating the index: %s", err)
+	// }
 
-	elasticsearchDefaultClient.Indices.Create("ads")
+	ctx, cancel := context.WithCancel(context.Background())
+	pool := workers.NewPool(numGoroutines)
+	errgroup := pool.StartPool(ctx)
+	stream := entry.NewJSONStream()
+	go func() {
+		for data := range stream.Watch() {
+			if data.Error != nil {
+				log.Println(data.Error)
+			}
+			pool.SendData(data.Advertisement)
+			time.Sleep(time.Second * 5)
+		}
+	}()
+
+	stream.Start(dataFilepath)
+	cancel()
+	errgroup.Wait()
 }

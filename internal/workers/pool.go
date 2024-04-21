@@ -1,31 +1,45 @@
 package workers
 
-import "sync"
+import (
+	"context"
+	"log"
+
+	"github.com/Smart-Machine/simplas-project/pkg/advertisement"
+	"golang.org/x/sync/errgroup"
+)
 
 type Pool struct {
-	workers   chan Worker
-	waitGroup sync.WaitGroup
+	workers         []Worker
+	roundRobinIndex int
 }
 
-func NewPool(maxGoroutines int) *Pool {
-	pool := Pool{workers: make(chan Worker)}
-	pool.waitGroup.Add(maxGoroutines)
-	for i := 0; i < maxGoroutines; i++ {
-		go func() {
-			for worker := range pool.workers {
-				worker.Task()
-			}
-			pool.waitGroup.Done()
-		}()
+func NewPool(numOfWorkers int) *Pool {
+	return &Pool{
+		workers:         make([]Worker, numOfWorkers),
+		roundRobinIndex: 0,
 	}
-	return &pool
 }
 
-func (p *Pool) Run(worker Worker) {
-	p.workers <- worker
+func (p *Pool) StartPool(ctx context.Context) *errgroup.Group {
+	group, groupCtx := errgroup.WithContext(ctx)
+	for i := 0; i < len(p.workers); i++ {
+		group.Go(func() error {
+			return p.workers[i].StartLoop(groupCtx)
+		})
+	}
+	return group
 }
 
-func (p *Pool) Shutdown() {
-	close(p.workers)
-	p.waitGroup.Wait()
+func (p *Pool) SendData(data advertisement.Advertisement) {
+	log.Printf("Sending to %d\n", p.roundRobinIndex)
+	p.workers[p.roundRobinIndex].SendData(data)
+	p.incrRRI()
+}
+
+func (p *Pool) incrRRI() {
+	if p.roundRobinIndex == len(p.workers)-1 {
+		p.roundRobinIndex = 0
+	} else {
+		p.roundRobinIndex = p.roundRobinIndex + 1
+	}
 }
