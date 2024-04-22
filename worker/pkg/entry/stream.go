@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Smart-Machine/simplas-project/pkg/advertisement"
+	"github.com/Smart-Machine/simplas-project/worker/pkg/advertisement"
 )
 
 type Entry struct {

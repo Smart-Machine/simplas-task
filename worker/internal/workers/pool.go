@@ -4,7 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/Smart-Machine/simplas-project/pkg/advertisement"
+	"github.com/Smart-Machine/simplas-project/service/proto"
+	"github.com/Smart-Machine/simplas-project/worker/pkg/advertisement"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -13,9 +14,13 @@ type Pool struct {
 	roundRobinIndex int
 }
 
-func NewPool(numOfWorkers int) *Pool {
+func NewPool(numOfWorkers int, consumerClient proto.ConsumerClient) *Pool {
+	workers := []Worker{}
+	for i := 0; i < numOfWorkers; i++ {
+		workers = append(workers, NewWorker(consumerClient))
+	}
 	return &Pool{
-		workers:         make([]Worker, numOfWorkers),
+		workers:         workers,
 		roundRobinIndex: 0,
 	}
 }

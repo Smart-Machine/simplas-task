@@ -1,0 +1,29 @@
+networks:
+  backend:
+    driver: bridge
+
+services:
+  service:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+#    restart:
+#      unless-stopped
+    environment:
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    networks:
+      - backend
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+#    restart:
+#      unless-stopped
+    depends_on:
+      - service
+    networks:
+      - backend

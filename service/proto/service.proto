@@ -1,0 +1,19 @@
+syntax = "proto3";
+option go_package = "service/proto";
+
+service Consumer {
+    rpc ConsumeData(ConsumeDataRequest) returns (ConsumeDataResponse) {}
+}
+
+message ConsumeDataRequest {
+    string id = 1;
+    map<string, string> categories = 2;
+    map<string, string> title = 3;
+    string type = 4;
+    double posted = 5;
+}
+
+message ConsumeDataResponse {
+    int32 status_code = 1;
+    string content = 2;
+}
