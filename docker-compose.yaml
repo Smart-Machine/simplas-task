@@ -3,27 +3,31 @@ networks:
     driver: bridge
 
 services:
-  service:
+  simplas-service:
     build:
-      context: ./service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./service/Dockerfile
     ports:
       - "8000:8000"
-#    restart:
-#      unless-stopped
+      - "8001:8001"
     environment:
       - ELASTIC_USERNAME=${ELASTIC_USERNAME}
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     networks:
       - backend
+    healthcheck: # dummy healthcheck
+      test: ["CMD", "echo", "healthy"]
+      interval: 10s
+      timeout: 0s
+      retries: 1
+      start_period: 15s
 
-  worker:
+  simplas-worker:
     build:
-      context: ./worker
-      dockerfile: Dockerfile
-#    restart:
-#      unless-stopped
+      context: .
+      dockerfile: ./worker/Dockerfile
     depends_on:
-      - service
+      simplas-service:
+        condition: service_healthy
     networks:
       - backend

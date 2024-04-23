@@ -1,1 +1,0 @@
-# simplas-task

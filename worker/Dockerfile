@@ -1,14 +1,10 @@
-FROM golang:1.22-alpine
+FROM --platform=linux/amd64 alpine
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh
+RUN apk add libc6-compat
 
-WORKDIR /app/worker
-#COPY /home/smart0machine/Projects/simplas-task/project/go.mod /home/smart0machine/Projects/simplas-task/project/go.sum ./
-COPY ../ ./
-RUN go mod download
-COPY . .
-RUN go build -o main .
-EXPOSE 8001
+WORKDIR /worker
 
-CMD ["./main"]
+COPY ./worker/build/bin ./
+COPY ./data/data.json ./
+
+CMD ["/worker/bin"]

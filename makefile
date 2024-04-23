@@ -1,17 +1,28 @@
 default: build run
 
 build:
-	@docker compose up -d
-	@chown -R $(id -u):$(id -g) certs
+	@echo "Building service..."
+	@GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -o service/build/bin service/cmd/main.go
+	@chmod +x service/build/bin
+	@echo "Done."
+	@echo "Building worker..."
+	@GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -o worker/build/bin worker/cmd/main.go
+	@chmod +x worker/build/bin
+	@echo "Done."
+
 
 run: build
-	@go run cmd/app/main.go
+	@docker compose up
 
 clean:
-	@sudo rm -rfv certs
 	@docker compose down -v
+	@docker image rmi `docker images -q`
+	@docker system prune
 
 gen-proto:
 	@protoc --go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
 		service/proto/service.proto
+
+debug:
+	@docker run -it --entrypoint=/bin/sh project-simplas-service

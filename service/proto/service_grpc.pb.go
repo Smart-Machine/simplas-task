@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -101,5 +102,263 @@ var Consumer_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
+	Metadata: "service/proto/service.proto",
+}
+
+// CRUDClient is the client API for CRUD service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CRUDClient interface {
+	Create(ctx context.Context, in *ConsumeDataRequest, opts ...grpc.CallOption) (*ConsumeDataResponse, error)
+	GetList(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (CRUD_GetListClient, error)
+	GetOne(ctx context.Context, in *wrapperspb.Int64Value, opts ...grpc.CallOption) (*ConsumeDataResponse, error)
+	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*ConsumeDataResponse, error)
+	Delete(ctx context.Context, in *wrapperspb.Int64Value, opts ...grpc.CallOption) (*wrapperspb.BoolValue, error)
+}
+
+type cRUDClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCRUDClient(cc grpc.ClientConnInterface) CRUDClient {
+	return &cRUDClient{cc}
+}
+
+func (c *cRUDClient) Create(ctx context.Context, in *ConsumeDataRequest, opts ...grpc.CallOption) (*ConsumeDataResponse, error) {
+	out := new(ConsumeDataResponse)
+	err := c.cc.Invoke(ctx, "/CRUD/Create", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cRUDClient) GetList(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (CRUD_GetListClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CRUD_ServiceDesc.Streams[0], "/CRUD/GetList", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &cRUDGetListClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type CRUD_GetListClient interface {
+	Recv() (*ConsumeDataResponse, error)
+	grpc.ClientStream
+}
+
+type cRUDGetListClient struct {
+	grpc.ClientStream
+}
+
+func (x *cRUDGetListClient) Recv() (*ConsumeDataResponse, error) {
+	m := new(ConsumeDataResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *cRUDClient) GetOne(ctx context.Context, in *wrapperspb.Int64Value, opts ...grpc.CallOption) (*ConsumeDataResponse, error) {
+	out := new(ConsumeDataResponse)
+	err := c.cc.Invoke(ctx, "/CRUD/GetOne", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cRUDClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*ConsumeDataResponse, error) {
+	out := new(ConsumeDataResponse)
+	err := c.cc.Invoke(ctx, "/CRUD/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cRUDClient) Delete(ctx context.Context, in *wrapperspb.Int64Value, opts ...grpc.CallOption) (*wrapperspb.BoolValue, error) {
+	out := new(wrapperspb.BoolValue)
+	err := c.cc.Invoke(ctx, "/CRUD/Delete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CRUDServer is the server API for CRUD service.
+// All implementations must embed UnimplementedCRUDServer
+// for forward compatibility
+type CRUDServer interface {
+	Create(context.Context, *ConsumeDataRequest) (*ConsumeDataResponse, error)
+	GetList(*wrapperspb.StringValue, CRUD_GetListServer) error
+	GetOne(context.Context, *wrapperspb.Int64Value) (*ConsumeDataResponse, error)
+	Update(context.Context, *UpdateRequest) (*ConsumeDataResponse, error)
+	Delete(context.Context, *wrapperspb.Int64Value) (*wrapperspb.BoolValue, error)
+	mustEmbedUnimplementedCRUDServer()
+}
+
+// UnimplementedCRUDServer must be embedded to have forward compatible implementations.
+type UnimplementedCRUDServer struct {
+}
+
+func (UnimplementedCRUDServer) Create(context.Context, *ConsumeDataRequest) (*ConsumeDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedCRUDServer) GetList(*wrapperspb.StringValue, CRUD_GetListServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetList not implemented")
+}
+func (UnimplementedCRUDServer) GetOne(context.Context, *wrapperspb.Int64Value) (*ConsumeDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOne not implemented")
+}
+func (UnimplementedCRUDServer) Update(context.Context, *UpdateRequest) (*ConsumeDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedCRUDServer) Delete(context.Context, *wrapperspb.Int64Value) (*wrapperspb.BoolValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedCRUDServer) mustEmbedUnimplementedCRUDServer() {}
+
+// UnsafeCRUDServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CRUDServer will
+// result in compilation errors.
+type UnsafeCRUDServer interface {
+	mustEmbedUnimplementedCRUDServer()
+}
+
+func RegisterCRUDServer(s grpc.ServiceRegistrar, srv CRUDServer) {
+	s.RegisterService(&CRUD_ServiceDesc, srv)
+}
+
+func _CRUD_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConsumeDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CRUDServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/CRUD/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CRUDServer).Create(ctx, req.(*ConsumeDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CRUD_GetList_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(wrapperspb.StringValue)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CRUDServer).GetList(m, &cRUDGetListServer{stream})
+}
+
+type CRUD_GetListServer interface {
+	Send(*ConsumeDataResponse) error
+	grpc.ServerStream
+}
+
+type cRUDGetListServer struct {
+	grpc.ServerStream
+}
+
+func (x *cRUDGetListServer) Send(m *ConsumeDataResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _CRUD_GetOne_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(wrapperspb.Int64Value)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CRUDServer).GetOne(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/CRUD/GetOne",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CRUDServer).GetOne(ctx, req.(*wrapperspb.Int64Value))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CRUD_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CRUDServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/CRUD/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CRUDServer).Update(ctx, req.(*UpdateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CRUD_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(wrapperspb.Int64Value)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CRUDServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/CRUD/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CRUDServer).Delete(ctx, req.(*wrapperspb.Int64Value))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CRUD_ServiceDesc is the grpc.ServiceDesc for CRUD service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CRUD_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "CRUD",
+	HandlerType: (*CRUDServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _CRUD_Create_Handler,
+		},
+		{
+			MethodName: "GetOne",
+			Handler:    _CRUD_GetOne_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _CRUD_Update_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _CRUD_Delete_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetList",
+			Handler:       _CRUD_GetList_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "service/proto/service.proto",
 }

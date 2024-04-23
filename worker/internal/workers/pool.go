@@ -36,7 +36,7 @@ func (p *Pool) StartPool(ctx context.Context) *errgroup.Group {
 }
 
 func (p *Pool) SendData(data advertisement.Advertisement) {
-	log.Printf("Sending to %d\n", p.roundRobinIndex)
+	log.Printf("Sending data for processing to %d\n", p.roundRobinIndex)
 	p.workers[p.roundRobinIndex].SendData(data)
 	p.incrRRI()
 }

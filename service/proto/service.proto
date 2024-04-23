@@ -1,6 +1,9 @@
 syntax = "proto3";
 option go_package = "service/proto";
 
+//import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
 service Consumer {
     rpc ConsumeData(ConsumeDataRequest) returns (ConsumeDataResponse) {}
 }
@@ -16,4 +19,17 @@ message ConsumeDataRequest {
 message ConsumeDataResponse {
     int32 status_code = 1;
     string content = 2;
+}
+
+message UpdateRequest {
+    google.protobuf.Int64Value id = 1;
+    ConsumeDataRequest data = 2;
+}
+
+service CRUD {
+    rpc Create(ConsumeDataRequest) returns (ConsumeDataResponse);
+    rpc GetList(google.protobuf.StringValue) returns (stream ConsumeDataResponse);
+    rpc GetOne(google.protobuf.Int64Value) returns (ConsumeDataResponse);
+    rpc Update(UpdateRequest) returns (ConsumeDataResponse);
+    rpc Delete(google.protobuf.Int64Value) returns (google.protobuf.BoolValue);
 }
